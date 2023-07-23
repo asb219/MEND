@@ -292,7 +292,7 @@ USE MOD_USRFS, ONLY: Sec2HMS, nMonsbwDates
         write(*,'(a20,20f10.4)')"fOBJ_weight[i] = ",sINI%rOBJw
         
         !!Convert OUTPUTS from HOURLY to DAILY & MONTHLY for all STATE VARIABLEs | FLUXes | RATEs
-        CALL sOUT_tscale(sINI%dirout,sINI%sDate_beg_sim,sINI%sDate_end_sim)
+        ! CALL sOUT_tscale(sINI%dirout,sINI%sDate_beg_sim,sINI%sDate_end_sim) ! commented by asb219
         
     END IF !!IF(sINI % iModel.lt.2)
     

@@ -560,7 +560,7 @@ SUBROUTINE subMEND_output(sDate,ihr, sPAR, sINI, sOUT)
 !        sDateHr, sOUT % CPOOL,sOUT % CPOOLI(1),sOUT % CPOOLI(2)
     write(sINI%iFout_VAR_hour, '(A10,200e20.6)') sDateHr, sOUT % CPOOL, sOUT%MNPOOL, sOUT%NPOOL, sOUT%CN !!,sOUT % CPOOLI(1),sOUT % CPOOLI(2)    
     write(sINI%iFout_FLX_hour, '(A10,200e20.6)') sDateHr, sOUT % CFLUX, sOUT%MNFLUX, sOUT%NFLUX
-    write(sINI%iFout_PAR_hour, '(A10,100e20.6)') sDateHr, sPAR
+    ! write(sINI%iFout_PAR_hour, '(A10,100e20.6)') sDateHr, sPAR  ! commented by asb219
 !    end if
 END !!subroutine subMEND_output
 
@@ -986,7 +986,7 @@ SUBROUTINE subMEND_RUN(xx, sPAR, sINI, sOUT)
             CALL subMEND_PAR(xx, sPAR, sINI)   !!modify parameter values by soil temperature, water potential, pH
             CALL subMEND(xx, sPAR, sINI, sOUT) !!MEND model 
             if (sINI % iModel .eq. 0 .or. sINI % iModel .eq. 3) then !output results for model simulation
-                CALL subMEND_output_rate(sDate,lp, sINI, sPAR, sINP, sOUT)
+                ! CALL subMEND_output_rate(sDate,lp, sINI, sPAR, sINP, sOUT) ! commented by asb219
                 CALL subMEND_output(sDate,lp, sPAR, sINI, sOUT)
             end if
 
