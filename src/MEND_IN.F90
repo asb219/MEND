@@ -48,13 +48,13 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     INTEGER             :: iRead
     real(8)             :: rRead, rRead2
     character(len=50)   :: sRead,sRead1
-    character(len=200)  :: sRead2
+    character(len=250)  :: sRead2 ! asb219 increased len=200 to 250
     
     integer             :: ndays,nmons  
     CHARACTER(LEN=2)    :: str2
     character(len=8)    :: sDate 
     character(len=10)   :: sUnits,ststep
-    character(len=200)  :: sfilename_full,sFile_inp,sFile_out
+    character(len=250)  :: sfilename_full,sFile_inp,sFile_out ! asb219 increased len=200 to 250
     
     character(len=20)   :: Name_POOL(const_nPOOL), Name_MNPOOL(const_nPOOL_MN)
     character(len=20)   :: Name_FLUX(const_nFLUX), Name_MNFLUX(const_nFLUX_MN)
@@ -75,7 +75,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     integer             :: iModel
     integer             :: iSA_range(2)
     CHARACTER(len=3)    :: ssMEND
-    CHARACTER(len=20)   :: Dir_Input, Dir_Output
+    CHARACTER(len=200)  :: Dir_Input, Dir_Output ! asb219 increased len=20 to 200
     character(len=8)    :: ssDate_beg_all, ssDate_end_all, ssDate_beg_sim, ssDate_end_sim
 
     character(len=20)   :: sfilename_ST(20), sfilename_SM(20), sfilename_type1(20), sfilename_pH(20)
@@ -126,6 +126,8 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     character(len=10)   :: step_NO3
     character(len=20)   :: sfilename_NH4(1), sfilename_NO3(1)
     real(8)             :: ST_constant, SM_constant, Input_type1_constant, NH4_constant, NO3_constant
+    character(len=200)  :: MEND_namelist_path ! added by asb219
+    integer             :: num_args ! number of commandline arguments, added by asb219
 
     namelist /mend_config/ sSite, sBIOME, sSOM, iModel, ssMEND, iSA_range, Altitude,GPPref, iGPPscaler, &
                        Dir_Input, Dir_Output, &
@@ -213,7 +215,22 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
       !Read the namelist
     !ierr = 0
 !        print*, 'ierr = ', ierr
-    open (10,file="MEND_namelist.nml",status='OLD',recl=80,delim='APOSTROPHE')
+    
+    ! Modified by asb219: allow custom namelist file provided as commandline argument
+    num_args = COMMAND_ARGUMENT_COUNT()
+    if(num_args.eq.0) then
+        MEND_namelist_path = "MEND_namelist.nml"
+    else if(num_args.eq.1) then
+        CALL GET_COMMAND_ARGUMENT(1, MEND_namelist_path)
+    else
+        print*,"Accepts at most 1 commandline argument, but provided", num_args
+        stop
+    end if
+    print*,"Use namelist ",trim(MEND_namelist_path)
+    open (10,file=trim(MEND_namelist_path),status='OLD',recl=80,delim='APOSTROPHE')
+    
+    !! How it used to be before changes by asb219
+    ! open (10,file="MEND_namelist.nml",status='OLD',recl=80,delim='APOSTROPHE')
 
     read(10,nml=mend_config, iostat=ierr,iomsg=msg)
     if(ierr/=0) then
@@ -237,8 +254,8 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     else
           sINI%Carbon_only = .false.
     end if
-    sINI%dirinp = StrCompress(Dir_Input)
-    sINI%dirout = StrCompress(Dir_Output)
+    sINI%dirinp = trim(Dir_Input) !StrCompress(Dir_Input) ! modified by asb219
+    sINI%dirout = trim(Dir_Output) !StrCompress(Dir_Output) ! modified by asb219
 
 !    CALL system('mkdir '//sINI%dirout)
     sRead2 = "mkdir "//trim(sINI%dirout)

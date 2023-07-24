@@ -3821,7 +3821,7 @@ SUBROUTINE sINP_Read(nfile,sfilename,dirinp,ststep,is_total,nMon,nHour,rINP)
     INTEGER ndays, nmons, iyr,imo, eof
     REAL(8) rRead
     CHARACTER(len=50)sRead
-    CHARACTER(len=200) sfilename_full
+    CHARACTER(len=250) sfilename_full ! asb219 increased len=200 to 250
     CHARACTER(len=8) sDate_beg,sDate_end
     
     k = 0 !!hour
