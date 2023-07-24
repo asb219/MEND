@@ -258,7 +258,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     sINI%dirout = trim(Dir_Output) !StrCompress(Dir_Output) ! modified by asb219
 
 !    CALL system('mkdir '//sINI%dirout)
-    sRead2 = "mkdir "//trim(sINI%dirout)
+    sRead2 = 'mkdir "'//trim(sINI%dirout)//'"' ! asb219 added " " to allow spaces and apostrophes in dirout
     CALL SYSTEM(trim(sRead2))
 
     sINI%sDate_beg_all = ssDate_beg_all
