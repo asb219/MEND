@@ -127,6 +127,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     character(len=20)   :: sfilename_NH4(1), sfilename_NO3(1)
     real(8)             :: ST_constant, SM_constant, Input_type1_constant, NH4_constant, NO3_constant
     character(len=200)  :: MEND_namelist_path ! added by asb219
+    character(len=8)    :: spinup ! commandline argument whether to spinup, added by asb219
     integer             :: num_args ! number of commandline arguments, added by asb219
 
     namelist /mend_config/ sSite, sBIOME, sSOM, iModel, ssMEND, iSA_range, Altitude,GPPref, iGPPscaler, &
@@ -216,18 +217,33 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     !ierr = 0
 !        print*, 'ierr = ', ierr
     
-    ! Modified by asb219: allow custom namelist file provided as commandline argument
+    ! Modified by asb219:
+    ! - allow custom namelist file provided as commandline argument
+    ! - allow second commandline argument to do spinup (reduces output)
     num_args = COMMAND_ARGUMENT_COUNT()
     if(num_args.eq.0) then
         MEND_namelist_path = "MEND_namelist.nml"
+        sINI%spinup = 0
     else if(num_args.eq.1) then
         CALL GET_COMMAND_ARGUMENT(1, MEND_namelist_path)
+        sINI%spinup = 0
+    else if(num_args.eq.2) then
+        CALL GET_COMMAND_ARGUMENT(1, MEND_namelist_path)
+        CALL GET_COMMAND_ARGUMENT(2, spinup)
+        if (trim(spinup).eq.'spinup') then
+            sINI%spinup = 1
+        else
+            sINI%spinup = 0
+        end if
     else
-        print*,"Accepts at most 1 commandline argument, but provided", num_args
+        print*,"Accepts at most 2 commandline arguments, but provided", num_args
         stop
     end if
     print*,"Use namelist ",trim(MEND_namelist_path)
     open (10,file=trim(MEND_namelist_path),status='OLD',recl=80,delim='APOSTROPHE')
+    if(sINI%spinup.ne.0) then
+        print*,"SPINUP RUN"
+    end if
     
     !! How it used to be before changes by asb219
     ! open (10,file="MEND_namelist.nml",status='OLD',recl=80,delim='APOSTROPHE')
@@ -441,11 +457,11 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
       write(sINI%iFout_PAR_hour,*)"Simulation_Period = ",sINI%sDate_beg_sim, " -- ",sINI%sDate_end_sim
       write(sINI%iFout_PAR_hour,'(a10,100a20)')"Hour",(trim(Name_PAR(i)),i=1,const_nPAR)
       
-      sfilename_full = trim(sINI%dirout)//trim("ITW_hour.dat")
-      open(unit = sINI%iFout_ITW_hour, file = sfilename_full, status = "unknown")
-      write(sINI%iFout_ITW_hour,*)"Data_Period = ",sINI%sDate_beg_all, " -- ",sINI%sDate_end_all
-      write(sINI%iFout_ITW_hour,'(a10,5a20)')"Hour","SIN_mg/cm3/h","STP_oC","SWC","SWP_MPa","pH"
-      
+! asb219 commented out this block
+!       sfilename_full = trim(sINI%dirout)//trim("ITW_hour.dat")
+!       open(unit = sINI%iFout_ITW_hour, file = sfilename_full, status = "unknown")
+!       write(sINI%iFout_ITW_hour,*)"Data_Period = ",sINI%sDate_beg_all, " -- ",sINI%sDate_end_all
+!       write(sINI%iFout_ITW_hour,'(a10,5a20)')"Hour","SIN_mg/cm3/h","STP_oC","SWC","SWP_MPa","pH"
       !!--------------------------------------------------------------------------
       
       write(sPAR_SCE%iFout_ini,700)
@@ -521,7 +537,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
       if(ifdata_type1.eq.1) then  !!nfile = 1 if ststep='monthly'
           sUnits = StrCompress(sUnits_type1)
           ststep = StrCompress(step_type1)  !!convert data with time-step (ststep=monthly,daily) to hourly
-          is_total = 1  !!usually litter_input is the total amount during a period
+          is_total = 0  !!usually litter_input is the total amount during a period ! asb219 disagrees and changed is_total = 1 to 0
           CALL sINP_Read(nfile_type1,sfilename_type1,sINI%dirinp,ststep,is_total,nmons,sINI%nHour,sINI%SIN)
       
       else !!constant litter input [mgC/cm3/h]
@@ -566,33 +582,36 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
       !!write hourly input data into 1 file
       sINI%SIN       = sINI%SIN      /sINI % soilDepth  !!covert mgC/cm2/[T] to mgC/cm3/[T]
       sINI%SIN_other = sINI%SIN_other/sINI % soilDepth
-      do k = 1,ndays
-          CALL sDate_After(k,sINI%sDate_beg_all,sDate)
-          do j=1,24 !!sINI%nHour
-              CALL sInt2Str(j,2,str2)
-              i = (k - 1)*24 + j
-              write(sINI%iFout_ITW_hour,'(A10,5f20.6)')sDate//str2,sINI%SIN(i),sINI%STP(i),sINI%SWC(i),sINI%SWP(i),sINI%SpH(i)
-          end do
-      end do
-      close(sINI%iFout_ITW_hour)
-      
-      !!compute daily/monthly/yearly STP,SWP,SIN-----------------------------------------------------------BEG
-      !    print*,">>>Inputs, Temperature, Water Content & Potential:"
-      sFile_inp = trim(sINI%dirout)//"ITW_hour.dat"
-      sFile_out = trim(sINI%dirout)//"ITW_day.dat"
-!        sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sINI%sDate_beg_all, sINI%sDate_beg_end,tstep,flag_avg)
-      CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,1,1)
-      CALL system('gzip -f '//sFile_inp)
-      
-      sFile_inp = trim(sINI%dirout)//"ITW_day.dat"
-      sFile_out = trim(sINI%dirout)//"ITW_mon.dat"
-      CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,2,1)
-      
-      sFile_inp = trim(sINI%dirout)//"ITW_day.dat"
-      sFile_out = trim(sINI%dirout)//"ITW_year.dat"
-      CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,4,1)
-      !!compute daily/monthly/yearly STP,SWP,SIN-----------------------------------------------------------END  
-      
+
+! START asb219 commented out this block
+!       do k = 1,ndays
+!           CALL sDate_After(k,sINI%sDate_beg_all,sDate)
+!           do j=1,24 !!sINI%nHour
+!               CALL sInt2Str(j,2,str2)
+!               i = (k - 1)*24 + j
+!               write(sINI%iFout_ITW_hour,'(A10,5f20.6)')sDate//str2,sINI%SIN(i),sINI%STP(i),sINI%SWC(i),sINI%SWP(i),sINI%SpH(i)
+!           end do
+!       end do
+!       close(sINI%iFout_ITW_hour)
+!
+!       !!compute daily/monthly/yearly STP,SWP,SIN-----------------------------------------------------------BEG
+!       !    print*,">>>Inputs, Temperature, Water Content & Potential:"
+!       sFile_inp = trim(sINI%dirout)//"ITW_hour.dat"
+!       sFile_out = trim(sINI%dirout)//"ITW_day.dat"
+! !        sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sINI%sDate_beg_all, sINI%sDate_beg_end,tstep,flag_avg)
+!       CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,1,1)
+!       ! CALL system('gzip -f "'//sFile_inp//'"') ! asb219 added " " to allow for spaces in sFile_inp
+!
+!       sFile_inp = trim(sINI%dirout)//"ITW_day.dat"
+!       sFile_out = trim(sINI%dirout)//"ITW_mon.dat"
+!       CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,2,1)
+!
+!       sFile_inp = trim(sINI%dirout)//"ITW_day.dat"
+!       sFile_out = trim(sINI%dirout)//"ITW_year.dat"
+!       CALL sOUT_ALL_tscale(sFile_inp,sFile_out,2,5, sINI%sDate_beg_all, sINI%sDate_end_all,4,1)
+!       !!compute daily/monthly/yearly STP,SWP,SIN-----------------------------------------------------------END
+! END asb219 commented out this block
+
       !!Calibration Variables & Data
 
       write(sPAR_SCE%iFout_ini,*)
@@ -682,7 +701,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
           if(ifdata_NH4.eq.1) then  !!nfile = 1 if ststep='monthly'
               sUnits = StrCompress(sUnits_NH4)
               ststep = StrCompress(step_NH4)  !!convert data with time-step (ststep=monthly,daily) to hourly
-              is_total = 1  !!usually litter_input is the total amount during a period
+              is_total = 0  !!usually litter_input is the total amount during a period ! asb219 disagrees and changed is_total = 1 to 0
               CALL sINP_Read(nfile_NH4,sfilename_NH4,sINI%dirinp,ststep,is_total,nmons,sINI%nHour,sINI%SIN_NH4)
 
           else !!constant input [mgN/cm2/h]
@@ -694,7 +713,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
           if(ifdata_NO3.eq.1) then  !!nfile = 1 if ststep='monthly'
               sUnits = StrCompress(sUnits_NO3)
               ststep = StrCompress(step_NO3)  !!convert data with time-step (ststep=monthly,daily) to hourly
-              is_total = 1  !!usually litter_input is the total amount during a period
+              is_total = 0  !!usually litter_input is the total amount during a period ! asb219 disagrees and changed is_total = 1 to 0
               CALL sINP_Read(nfile_NO3,sfilename_NO3,sINI%dirinp,ststep,is_total,nmons,sINI%nHour,sINI%SIN_NO3)
 
           else !!constant input [mgN/cm2/h]

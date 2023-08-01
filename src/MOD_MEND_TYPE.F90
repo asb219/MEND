@@ -445,6 +445,7 @@ MODULE MOD_MEND_TYPE
          REAL(8) STP_delta                              ![C], annual change in temperature
          REAL(8) SWC_logis(3)                           !Soil Water Content (SWC) parameter in logistic equation:  (1) p <SWC_t=infinity / SWC0>, (2) r <steepness>, (3) t0 <reference year>
          REAL(8) SIN_logis(4)                           !Litter Input (SIN) Parameters in logistic equation:       (1) beta0 <intercept>, (2)beta1 <steepness>, (3)t0 <reference year>, (4) fDOC_delta <annual change of DOC fraction in SOC input>
+         INTEGER spinup ! 0 or 1
       END TYPE sMEND_INI
       
 !-----------------------------------------------------------------------------! 

@@ -96,7 +96,7 @@ SUBROUTINE subMEND_INI(sINI)
     REAL(8) frISO(const_nISO), frISOadd(const_nISO)
     REAL(8) frac(3), CN_DOM, rCN_LIG2LAB  !!rCN_LIG2LAB = CN_LIGNIN/CN_LABILE 
 
-    CHARACTER(len = 100) sRead!!propName(nProp) !name of 10 properties 
+    CHARACTER(len = 250) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 250
     INTEGER iRead  !!iTemp
     REAL(8) rRead  !!rTemp
     
@@ -332,7 +332,7 @@ SUBROUTINE subMEND_INI_Read(dINI,sFile_INI)
     INTEGER j !!i, j, k, lp
     INTEGER ifini !!, ifobs  
 
-    CHARACTER(len = 100) sRead!!propName(nProp) !name of 10 properties 
+    CHARACTER(len = 250) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 250
     INTEGER iRead  !!iTemp
 
     ifini = 1
@@ -987,7 +987,9 @@ SUBROUTINE subMEND_RUN(xx, sPAR, sINI, sOUT)
             CALL subMEND(xx, sPAR, sINI, sOUT) !!MEND model 
             if (sINI % iModel .eq. 0 .or. sINI % iModel .eq. 3) then !output results for model simulation
                 ! CALL subMEND_output_rate(sDate,lp, sINI, sPAR, sINP, sOUT) ! commented by asb219
-                CALL subMEND_output(sDate,lp, sPAR, sINI, sOUT)
+                if(sINI%spinup.eq.0) then ! this is not a spinup run (asb219)
+                    CALL subMEND_output(sDate,lp, sPAR, sINI, sOUT)
+                end if ! if-condition added by asb219
             end if
 
             !!Extract output variables to compare with observations 
@@ -1089,6 +1091,10 @@ SUBROUTINE subMEND_RUN(xx, sPAR, sINI, sOUT)
             end if
         end do !!do k =1,nOBS
     end do !!do j = 1,sINI%nVARopt
+    
+    if(sINI%spinup.ne.0) then ! this is a spinup run (asb219)
+        CALL subMEND_output('00010101', 1, sPAR, sINI, sOUT) ! added by asb219
+    end if
     
     DEALLOCATE(dSIM_d)
     DEALLOCATE(dSIM_m)
@@ -3737,7 +3743,7 @@ SUBROUTINE sOUT_tscale(dirout,sDate_beg,sDate_end)
 !    nRow_skip=3; nVAR=const_nPOOL*(const_nISO+1); tstep=1; flag_avg=1
     nRow_skip=3; nVAR=const_nPOOL*3 + const_nPOOL_MN; tstep=1; flag_avg=1
     CALL sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sDate_beg, sDate_end,tstep,flag_avg)
-    CALL system('gzip -f '//sFile_inp)
+    CALL system('gzip -f "'//sFile_inp//'"') ! asb219 added " " to allow for spaces in sFile_inp
     
     sFile_inp = trim(dirout)//"VAR_day.out" 
     sFile_out = trim(dirout)//"VAR_mon.out"
@@ -3755,7 +3761,7 @@ SUBROUTINE sOUT_tscale(dirout,sDate_beg,sDate_end)
     sFile_out = trim(dirout)//"FLX_day.out"
     nRow_skip=2; nVAR=const_nFLUX*2 + const_nFLUX_MN; tstep=1; flag_avg=1
     CALL sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sDate_beg, sDate_end,tstep,flag_avg)
-    CALL system('gzip -f '//sFile_inp)
+    CALL system('gzip -f "'//sFile_inp//'"') ! asb219 added " " to allow for spaces in sFile_inp
     
     sFile_inp = trim(dirout)//"FLX_day.out"   
     sFile_out = trim(dirout)//"FLX_mon.out"
@@ -3772,7 +3778,7 @@ SUBROUTINE sOUT_tscale(dirout,sDate_beg,sDate_end)
     sFile_out = trim(dirout)//"PAR_day.out"
     nRow_skip=2; nVAR=const_nPAR; tstep=1; flag_avg=1
     CALL sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sDate_beg, sDate_end,tstep,flag_avg)
-    CALL system('gzip -f '//sFile_inp)
+    CALL system('gzip -f "'//sFile_inp//'"') ! asb219 added " " to allow for spaces in sFile_inp
     
     sFile_inp = trim(dirout)//"PAR_day.out"
     sFile_out = trim(dirout)//"PAR_mon.out"
@@ -3789,7 +3795,7 @@ SUBROUTINE sOUT_tscale(dirout,sDate_beg,sDate_end)
     sFile_out = trim(dirout)//"RATE_day.out"
     nRow_skip=2; nVAR=const_nRATE; tstep=1; flag_avg=1
     CALL sOUT_ALL_tscale(sFile_inp,sFile_out,nRow_skip,nVAR, sDate_beg, sDate_end,tstep,flag_avg)
-    CALL system('gzip -f '//sFile_inp)
+    CALL system('gzip -f "'//sFile_inp//'"') ! asb219 added " " to allow for spaces in sFile_inp
     
     sFile_inp = trim(dirout)//"RATE_day.out"
     sFile_out = trim(dirout)//"RATE_mon.out"
