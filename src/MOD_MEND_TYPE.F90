@@ -340,8 +340,8 @@ MODULE MOD_MEND_TYPE
          CHARACTER(len=10) SITE                         !!Site Name, used for prefix of output files
          CHARACTER(len=3) BIOME                         !!'ASM' = arid/semiarid/mediterranean; 'MGC'=mesic grassland & cropland; 'MDF'=Mesic Deciduous Forest; 'MCF'=MEsic Conifer Forest
          CHARACTER(len=3) SOM                           !!'SOD' = disturbed soil; 'SOL'=intact soil; 'LIT'=litter
-         CHARACTER(len=200) dirinp                      !!input dir ! asb219 increased len=30 to 200
-         CHARACTER(len=220) dirout                      !!output dir ! asb219 increased len=30 to 220
+         CHARACTER(len=500) dirinp                      !!input dir ! asb219 increased len=30 to 500
+         CHARACTER(len=500) dirout                      !!output dir ! asb219 increased len=30 to 500
          character(len=8) sDate_beg_all                 !!"yyyymmdd": available input data: begin date for optimizaton
          character(len=8) sDate_end_all                 !!"yyyymmdd": available input data: end date for optimizaton
          character(len=8) sDate_beg_sim                 !!"yyyymmdd": simulation: begin date 

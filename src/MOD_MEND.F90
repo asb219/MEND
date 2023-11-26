@@ -96,7 +96,7 @@ SUBROUTINE subMEND_INI(sINI)
     REAL(8) frISO(const_nISO), frISOadd(const_nISO)
     REAL(8) frac(3), CN_DOM, rCN_LIG2LAB  !!rCN_LIG2LAB = CN_LIGNIN/CN_LABILE 
 
-    CHARACTER(len = 250) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 250
+    CHARACTER(len = 550) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 550
     INTEGER iRead  !!iTemp
     REAL(8) rRead  !!rTemp
     
@@ -332,7 +332,7 @@ SUBROUTINE subMEND_INI_Read(dINI,sFile_INI)
     INTEGER j !!i, j, k, lp
     INTEGER ifini !!, ifobs  
 
-    CHARACTER(len = 250) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 250
+    CHARACTER(len = 550) sRead!!propName(nProp) !name of 10 properties ! asb219 increased len=100 to 550
     INTEGER iRead  !!iTemp
 
     ifini = 1
@@ -3827,7 +3827,7 @@ SUBROUTINE sINP_Read(nfile,sfilename,dirinp,ststep,is_total,nMon,nHour,rINP)
     INTEGER ndays, nmons, iyr,imo, eof
     REAL(8) rRead
     CHARACTER(len=50)sRead
-    CHARACTER(len=250) sfilename_full ! asb219 increased len=200 to 250
+    CHARACTER(len=550) sfilename_full ! asb219 increased len=200 to 550
     CHARACTER(len=8) sDate_beg,sDate_end
     
     k = 0 !!hour

@@ -48,13 +48,13 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     INTEGER             :: iRead
     real(8)             :: rRead, rRead2
     character(len=50)   :: sRead,sRead1
-    character(len=250)  :: sRead2 ! asb219 increased len=200 to 250
+    character(len=550)  :: sRead2 ! asb219 increased len=200 to 550
     
     integer             :: ndays,nmons  
     CHARACTER(LEN=2)    :: str2
     character(len=8)    :: sDate 
     character(len=10)   :: sUnits,ststep
-    character(len=250)  :: sfilename_full,sFile_inp,sFile_out ! asb219 increased len=200 to 250
+    character(len=550)  :: sfilename_full,sFile_inp,sFile_out ! asb219 increased len=200 to 550
     
     character(len=20)   :: Name_POOL(const_nPOOL), Name_MNPOOL(const_nPOOL_MN)
     character(len=20)   :: Name_FLUX(const_nFLUX), Name_MNFLUX(const_nFLUX_MN)
@@ -75,7 +75,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     integer             :: iModel
     integer             :: iSA_range(2)
     CHARACTER(len=3)    :: ssMEND
-    CHARACTER(len=200)  :: Dir_Input, Dir_Output ! asb219 increased len=20 to 200
+    CHARACTER(len=500)  :: Dir_Input, Dir_Output ! asb219 increased len=20 to 500
     character(len=8)    :: ssDate_beg_all, ssDate_end_all, ssDate_beg_sim, ssDate_end_sim
 
     character(len=20)   :: sfilename_ST(20), sfilename_SM(20), sfilename_type1(20), sfilename_pH(20)
@@ -126,7 +126,7 @@ SUBROUTINE MENDIN(sPAR_SCE,sINI)
     character(len=10)   :: step_NO3
     character(len=20)   :: sfilename_NH4(1), sfilename_NO3(1)
     real(8)             :: ST_constant, SM_constant, Input_type1_constant, NH4_constant, NO3_constant
-    character(len=200)  :: MEND_namelist_path ! added by asb219
+    character(len=550)  :: MEND_namelist_path ! added by asb219
     character(len=8)    :: spinup ! commandline argument whether to spinup, added by asb219
     integer             :: num_args ! number of commandline arguments, added by asb219
 
